@@ -24,3 +24,8 @@ services:
       dockerfile: Payments/Dockerfile
     ports:
       - "8380:8080"
+
+  load-test:
+    container_name: load-test
+    build:
+      dockerfile: LoadTest/Dockerfile

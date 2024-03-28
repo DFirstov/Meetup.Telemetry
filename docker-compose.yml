@@ -1,0 +1,26 @@
+version: "3.3"
+
+services:
+  shop:
+    image: shop
+    container_name: shop
+    build:
+      dockerfile: Shop/Dockerfile
+    ports:
+      - "8180:8080"
+
+  stock:
+    image: stock
+    container_name: stock
+    build:
+      dockerfile: Stock/Dockerfile
+    ports:
+      - "8280:8080"
+
+  payments:
+    image: payments
+    container_name: payments
+    build:
+      dockerfile: Payments/Dockerfile
+    ports:
+      - "8380:8080"

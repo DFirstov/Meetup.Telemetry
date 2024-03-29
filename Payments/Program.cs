@@ -1,4 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders(); // disable default logging
+
 var app = builder.Build();
 
 app.MapPost("/pay/{sum:decimal}", (decimal sum) =>

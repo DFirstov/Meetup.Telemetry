@@ -1,5 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders(); // disable default logging
 builder.Services.AddHttpClient();
+
 var app = builder.Build();
 
 app.MapGet("/products", (HttpClient httpClient) =>

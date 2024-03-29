@@ -29,3 +29,11 @@ services:
     container_name: load-test
     build:
       dockerfile: LoadTest/Dockerfile
+
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5341:80"

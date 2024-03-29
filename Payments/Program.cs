@@ -1,19 +1,34 @@
+using Microsoft.AspNetCore.Mvc;
+using Serilog;
+using Serilog.Events;
+using ILogger = Serilog.ILogger;
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Logging.ClearProviders(); // disable default logging
+builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
+	.MinimumLevel.Debug()
+	.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+	.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+	.WriteTo.Console()
+	.WriteTo.Seq("http://seq"));
 
 var app = builder.Build();
 
 string[] clients = ["John", "Paul", "George", "Ringo", "Yoko", "Pete", "Mick", "Keith", "Charlie", "Ronnie", "David"];
 
-app.MapPost("/pay/{sum:decimal}", (decimal sum) =>
+app.MapPost("/pay/{sum:decimal}", (decimal sum, [FromServices] ILogger logger) =>
 {
 	var clientAccount = GetClientAccount(sum);
+	
+	logger.Debug("Paying {Sum} roubles from the account {@ClientAccount}", sum, clientAccount);
+	
 	if (clientAccount.Balance < sum)
 	{
+		logger.Warning("Not enough money on the account {@ClientAccount}", clientAccount);
 		return Results.BadRequest($"Not enough money on the account {clientAccount.ClientName}");
 	}
 
+	logger.Debug("Payment from the account {@ClientAccount} succeeded", clientAccount);
 	return Results.Ok($"Payment of the client {clientAccount.ClientName} succeeded");
 });
 

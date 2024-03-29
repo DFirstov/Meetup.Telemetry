@@ -1,3 +1,5 @@
+using Destructurama;
+using Destructurama.Attributed;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using Serilog.Events;
@@ -10,7 +12,8 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
 	.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
 	.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
 	.WriteTo.Console()
-	.WriteTo.Seq("http://seq"));
+	.WriteTo.Seq("http://seq")
+	.Destructure.UsingAttributes());
 
 var app = builder.Build();
 
@@ -19,9 +22,9 @@ string[] clients = ["John", "Paul", "George", "Ringo", "Yoko", "Pete", "Mick", "
 app.MapPost("/pay/{sum:decimal}", (decimal sum, [FromServices] ILogger logger) =>
 {
 	var clientAccount = GetClientAccount(sum);
-	
+
 	logger.Debug("Paying {Sum} roubles from the account {@ClientAccount}", sum, clientAccount);
-	
+
 	if (clientAccount.Balance < sum)
 	{
 		logger.Warning("Not enough money on the account {@ClientAccount}", clientAccount);
@@ -43,6 +46,11 @@ ClientAccount GetClientAccount(decimal sum)
 	return new ClientAccount(clientName, clientBalance);
 }
 
-record ClientAccount(
+record ClientAccount
+(
+	[property: LogMasked(PreserveLength = true, ShowFirst = 1, ShowLast = 1)]
 	string ClientName,
-	decimal Balance);
+
+	[property: NotLogged]
+	decimal Balance
+);

@@ -12,8 +12,10 @@ while (true)
 		if (products == null)
 			continue;
 
-		var productIndex = Random.Shared.Next(0, products.Length);
-		var product = products[productIndex];
+		var productIndex = Random.Shared.Next(0, products.Length + 1);
+		var product = productIndex < products.Length
+			? products[productIndex]
+			: "unknown";
 
 		await httpClient.PostAsync($"http://shop:8080/products/buy?product={product}", null);
 	}

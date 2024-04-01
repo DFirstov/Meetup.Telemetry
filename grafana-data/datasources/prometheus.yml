@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    uid: eea22e54-7f5c-4c49-8f33-30e4c7be5639
+    url: http://prometheus:9090
+    user:
+    database:
+    basicAuth: false
+    isDefault: true
+    jsonData:
+      httpMethod: POST
+    editable: true

@@ -9,6 +9,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3A1E5A64-4CC6-4A62-8AF9-52A5FDD7DE34}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
+		prometheus.yml = prometheus.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadTest", "LoadTest\LoadTest.csproj", "{03109EFC-1417-41B2-87CC-A336538339A9}"

@@ -37,3 +37,11 @@ services:
       - ACCEPT_EULA=Y
     ports:
       - "5341:80"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"

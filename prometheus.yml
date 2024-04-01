@@ -1,0 +1,17 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'shop'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['shop:8080']
+  - job_name: 'stock'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['stock:8080']
+  - job_name: 'payments'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['payments:8080']

@@ -22,6 +22,8 @@ var app = builder.Build();
 app.UseMetricServer(url: "/metrics");
 app.UseHttpMetrics();
 
+var moneyCounter = Metrics.CreateCounter("money_spent", "Money spent on products", "currency");
+
 app.MapGet("/products", (HttpClient httpClient, [FromServices] ILogger logger) =>
 {
 	logger.Debug("Getting products");
@@ -50,6 +52,7 @@ app.MapPost("/products/buy", async (string product, HttpClient httpClient, [From
 		return Results.BadRequest(paymentFailureMessage);
 	}
 
+	moneyCounter.WithLabels("roubles").Inc(sum);
 	logger.Debug("The product {Product} was bought for {Sum} roubles", product, sum);
 	return Results.Ok($"The product {product} was bought for {sum} roubles");
 });

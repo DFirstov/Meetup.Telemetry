@@ -9,6 +9,8 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
 	.MinimumLevel.Debug()
 	.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
 	.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+	.MinimumLevel.Override("System.Net.Http.HttpClient.Default.LogicalHandler", LogEventLevel.Warning)
+	.MinimumLevel.Override("System.Net.Http.HttpClient.Default.ClientHandler", LogEventLevel.Warning)
 	.WriteTo.Console()
 	.WriteTo.Seq("http://seq"));
 

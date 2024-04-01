@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
 
@@ -10,7 +12,8 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
 	.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
 	.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
 	.WriteTo.Console()
-	.WriteTo.Seq("http://seq"));
+	.WriteTo.Seq("http://seq")
+	.WriteTo.Sink<StatisticsSink>());
 
 var app = builder.Build();
 
@@ -42,4 +45,18 @@ app.MapPost("/products/reserve/{product}", (string product, [FromServices] ILogg
 	return Results.Ok($"Product {product} reserved");
 });
 
+app.MapGet("/log/statistics", () => StatisticsSink.Statistics);
+
 app.Run();
+
+class StatisticsSink : ILogEventSink
+{
+	static readonly ConcurrentDictionary<LogEventLevel, int> _statistics = new();
+	
+	public void Emit(LogEvent logEvent)
+	{
+		_statistics.AddOrUpdate(logEvent.Level, 1, (_, count) => count + 1);
+	}
+	
+	public static IReadOnlyDictionary<LogEventLevel, int> Statistics => _statistics;
+}

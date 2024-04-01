@@ -1,6 +1,7 @@
 using Destructurama;
 using Destructurama.Attributed;
 using Microsoft.AspNetCore.Mvc;
+using Prometheus;
 using Serilog;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
@@ -16,6 +17,9 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
 	.Destructure.UsingAttributes());
 
 var app = builder.Build();
+
+app.UseMetricServer(url: "/metrics");
+app.UseHttpMetrics();
 
 string[] clients = ["John", "Paul", "George", "Ringo", "Yoko", "Pete", "Mick", "Keith", "Charlie", "Ronnie", "David"];
 

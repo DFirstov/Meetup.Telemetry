@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Prometheus;
 using Serilog;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
@@ -17,6 +18,9 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
+
+app.UseMetricServer(url: "/metrics");
+app.UseHttpMetrics();
 
 app.MapGet("/products", (HttpClient httpClient, [FromServices] ILogger logger) =>
 {

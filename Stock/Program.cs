@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Mvc;
+using Prometheus;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -16,6 +17,9 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
 	.WriteTo.Sink<StatisticsSink>());
 
 var app = builder.Build();
+
+app.UseMetricServer(url: "/metrics");
+app.UseHttpMetrics();
 
 string[] products = ["milk", "bread", "cheese", "apples", "oranges", "bananas", "eggs", "chicken", "fish", "tomatoes"];
 

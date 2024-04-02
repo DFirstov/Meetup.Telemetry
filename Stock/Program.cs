@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Mvc;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Prometheus;
 using Serilog;
 using Serilog.Core;
@@ -15,6 +17,13 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
 	.WriteTo.Console()
 	.WriteTo.Seq("http://seq")
 	.WriteTo.Sink<StatisticsSink>());
+
+builder.Services
+	.AddOpenTelemetry()
+	.ConfigureResource(resource => resource.AddService("stock"))
+	.WithTracing(tracing => tracing
+		.AddAspNetCoreInstrumentation()
+		.AddOtlpExporter(options => options.Endpoint = new Uri("http://jaeger:4317")));
 
 var app = builder.Build();
 

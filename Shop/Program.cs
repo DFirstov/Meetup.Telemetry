@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Prometheus;
 using Serilog;
 using Serilog.Events;
@@ -14,6 +16,13 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
 	.MinimumLevel.Override("System.Net.Http.HttpClient.Default.ClientHandler", LogEventLevel.Warning)
 	.WriteTo.Console()
 	.WriteTo.Seq("http://seq"));
+
+builder.Services
+	.AddOpenTelemetry()
+	.ConfigureResource(resource => resource.AddService("shop"))
+	.WithTracing(tracing => tracing
+		.AddAspNetCoreInstrumentation()
+		.AddOtlpExporter(options => options.Endpoint = new Uri("http://jaeger:4317")));
 
 builder.Services.AddHttpClient();
 

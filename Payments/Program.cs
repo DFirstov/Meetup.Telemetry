@@ -1,6 +1,8 @@
 using Destructurama;
 using Destructurama.Attributed;
 using Microsoft.AspNetCore.Mvc;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Prometheus;
 using Serilog;
 using Serilog.Events;
@@ -15,6 +17,13 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
 	.WriteTo.Console()
 	.WriteTo.Seq("http://seq")
 	.Destructure.UsingAttributes());
+
+builder.Services
+	.AddOpenTelemetry()
+	.ConfigureResource(resource => resource.AddService("payments"))
+	.WithTracing(tracing => tracing
+		.AddAspNetCoreInstrumentation()
+		.AddOtlpExporter(options => options.Endpoint = new Uri("http://jaeger:4317")));
 
 var app = builder.Build();
 

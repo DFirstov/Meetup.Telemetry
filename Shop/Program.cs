@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -22,6 +23,7 @@ builder.Services
 	.ConfigureResource(resource => resource.AddService("shop"))
 	.WithTracing(tracing => tracing
 		.AddAspNetCoreInstrumentation()
+		.AddSource("my-source")
 		.AddOtlpExporter(options => options.Endpoint = new Uri("http://jaeger:4317")));
 
 builder.Services.AddHttpClient();
@@ -44,21 +46,30 @@ app.MapPost("/products/buy", async (string product, HttpClient httpClient, [From
 	var sum = Random.Shared.Next(100, 10000);
 	
 	logger.Debug("Buying {Product} for {Sum} roubles", product, sum);
-	
-	var reservationResult = await httpClient.PostAsync($"http://stock:8080/products/reserve/{product}", null);
-	if (!reservationResult.IsSuccessStatusCode)
-	{
-		var reservationFailureMessage = reservationResult.Content.ReadAsStringAsync();
-		logger.Warning("Reservation of {Product} failed: {ReservationFailureMessage}", product, reservationFailureMessage);
-		return Results.BadRequest(reservationFailureMessage);
-	}
 
-	var paymentResult = await httpClient.PostAsync($"http://payments:8080/pay/{sum}", null);
-	if (!paymentResult.IsSuccessStatusCode)
+	ActivitySource mySource = new("my-source");
+
+	using (mySource.StartActivity("reservation", ActivityKind.Client))
 	{
-		var paymentFailureMessage = paymentResult.Content.ReadAsStringAsync();
-		logger.Warning("Payment of {Sum} roubles failed: {PaymentFailureMessage}", sum, paymentFailureMessage);
-		return Results.BadRequest(paymentFailureMessage);
+		var reservationResult = await httpClient.PostAsync($"http://stock:8080/products/reserve/{product}", null);
+		if (!reservationResult.IsSuccessStatusCode)
+		{
+			var reservationFailureMessage = reservationResult.Content.ReadAsStringAsync();
+			logger.Warning("Reservation of {Product} failed: {ReservationFailureMessage}", product,
+				reservationFailureMessage);
+			return Results.BadRequest(reservationFailureMessage);
+		}
+	}
+	
+	using (mySource.StartActivity("payment", ActivityKind.Client))
+	{
+		var paymentResult = await httpClient.PostAsync($"http://payments:8080/pay/{sum}", null);
+		if (!paymentResult.IsSuccessStatusCode)
+		{
+			var paymentFailureMessage = paymentResult.Content.ReadAsStringAsync();
+			logger.Warning("Payment of {Sum} roubles failed: {PaymentFailureMessage}", sum, paymentFailureMessage);
+			return Results.BadRequest(paymentFailureMessage);
+		}
 	}
 
 	moneyCounter.WithLabels("roubles").Inc(sum);

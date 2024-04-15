@@ -4,6 +4,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Prometheus;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
 
@@ -15,6 +16,7 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
 	.MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
 	.MinimumLevel.Override("System.Net.Http.HttpClient.Default.LogicalHandler", LogEventLevel.Warning)
 	.MinimumLevel.Override("System.Net.Http.HttpClient.Default.ClientHandler", LogEventLevel.Warning)
+	.Enrich.With<OpenTelemetryEnricher>()
 	.WriteTo.Console()
 	.WriteTo.Seq("http://seq"));
 
@@ -78,3 +80,18 @@ app.MapPost("/products/buy", async (string product, HttpClient httpClient, [From
 });
 
 app.Run();
+
+class OpenTelemetryEnricher : ILogEventEnricher
+{
+	public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+	{
+		var currentActivity = Activity.Current;
+		if (currentActivity == null)
+			return;
+
+		logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("TraceId", currentActivity.TraceId));
+		logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("SpanId", currentActivity.SpanId));
+		
+		logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("TraceLink", $"http://localhost:16686/trace/{currentActivity.TraceId}"));
+	}
+}

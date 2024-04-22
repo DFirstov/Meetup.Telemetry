@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   shop:
-    image: shop
+    image: shop:intro
     container_name: shop
     build:
       dockerfile: Shop/Dockerfile
@@ -10,7 +10,7 @@ services:
       - "8180:8080"
 
   stock:
-    image: stock
+    image: stock:intro
     container_name: stock
     build:
       dockerfile: Stock/Dockerfile
@@ -18,7 +18,7 @@ services:
       - "8280:8080"
 
   payments:
-    image: payments
+    image: payments:intro
     container_name: payments
     build:
       dockerfile: Payments/Dockerfile
